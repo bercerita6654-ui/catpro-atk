@@ -287,6 +287,41 @@ export default function App() {
     });
   };
 
+  // Set explicit quantity for a cart item
+  const handleSetCartItemQuantity = (product: Product, quantity: number) => {
+    let finalQty = quantity;
+    let limitReached = false;
+
+    if (finalQty <= 0) {
+      setCart(prevCart => prevCart.filter(item => item.product.sku !== product.sku));
+      return;
+    }
+
+    if (finalQty > product.qty) {
+      finalQty = product.qty;
+      limitReached = true;
+    }
+
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.product.sku === product.sku);
+      if (existing) {
+        return prevCart.map(item =>
+          item.product.sku === product.sku
+            ? { ...item, quantity: finalQty }
+            : item
+        );
+      }
+      return [...prevCart, { product, quantity: finalQty }];
+    });
+
+    if (limitReached) {
+      setStockAlert({
+        productName: product.name,
+        message: `Stok tidak mencukupi! Batas maksimum pemesanan untuk "${product.name}" sesuai stok kami telah tercapai (${product.qty} ${product.unit}).`,
+      });
+    }
+  };
+
   // Clear single item completely
   const handleClearCartItem = (product: Product) => {
     setCart(prevCart => prevCart.filter(item => item.product.sku !== product.sku));
@@ -773,6 +808,7 @@ export default function App() {
                         cartQuantity={cartQuantities[product.sku] || 0}
                         onAddToCart={handleAddToCart}
                         onRemoveFromCart={handleRemoveFromCart}
+                        onSetCartItemQuantity={handleSetCartItemQuantity}
                       />
                     ))}
                   </div>
@@ -866,6 +902,7 @@ export default function App() {
                 cartItems={cart}
                 onAddToCart={handleAddToCart}
                 onRemoveFromCart={handleRemoveFromCart}
+                onSetCartItemQuantity={handleSetCartItemQuantity}
                 onClearCartItem={handleClearCartItem}
                 onClearAll={handleClearAllCart}
                 onUpdateCartItemNote={handleUpdateCartItemNote}
