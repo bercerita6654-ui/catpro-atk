@@ -121,8 +121,7 @@ export function generateWhatsAppMessage(cartItems: CartItem[], orderDetails: Ord
     msg += `${index + 1}. [${item.product.sku}] ${item.product.name}${itemNote} (${item.quantity} ${item.product.unit})\n`;
   });
 
-  msg += `\n*Total Item:* ${totalItems} unit\n\n`;
-  msg += `_Saya telah mengunduh file Quotation Excel dan akan mengirimkannya setelah ini._`;
+  msg += `\n*Total Item:* ${totalItems} unit`;
 
   return encodeURIComponent(msg);
 }
