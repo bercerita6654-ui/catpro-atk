@@ -1,0 +1,6 @@
+{
+  "name": "Katalog Digital",
+  "description": "Aplikasi katalog digital interaktif dengan keranjang belanja dan sistem pemesanan ekspor Excel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
