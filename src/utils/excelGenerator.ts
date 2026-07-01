@@ -93,6 +93,49 @@ export function generateOrderExcel(cartItems: CartItem[], orderDetails: OrderDet
   // Append worksheet to workbook
   XLSX.utils.book_append_sheet(wb, ws, 'Quotation Detail');
 
+  // Create sheet1 data with only SKU and QTY
+  const sheet1Rows: any[] = [
+    ['SKU', 'QTY']
+  ];
+
+  cartItems.forEach((item) => {
+    sheet1Rows.push([
+      item.product.sku,
+      item.quantity
+    ]);
+  });
+
+  const ws1 = XLSX.utils.aoa_to_sheet(sheet1Rows);
+
+  // Set column widths for sheet1
+  ws1['!cols'] = [
+    { wch: 20 }, // SKU
+    { wch: 10 }  // QTY
+  ];
+
+  // Protect sheet1 to prevent casual modifications
+  ws1['!protect'] = {
+    password: '0000',
+    selectLockedCells: false,
+    selectUnlockedCells: true,
+    formatCells: false,
+    formatColumns: false,
+    formatRows: false,
+    insertColumns: false,
+    insertRows: false,
+    insertHyperlinks: false,
+    deleteColumns: false,
+    deleteRows: false,
+    sort: false,
+    autoFilter: false,
+    pivotTables: false,
+    objects: false,
+    scenarios: false
+  };
+
+  // Append sheet1 to workbook
+  XLSX.utils.book_append_sheet(wb, ws1, 'sheet1');
+
   // Generate safe filename
   const cleanName = orderDetails.customerName.replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `Quotation_${cleanName}_${new Date().toISOString().slice(0,10)}.xlsx`;
@@ -104,7 +147,7 @@ export function generateOrderExcel(cartItems: CartItem[], orderDetails: OrderDet
 export function generateWhatsAppMessage(cartItems: CartItem[], orderDetails: OrderDetails): string {
   const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  let msg = `*PENAWARAN HARGA / QUOTATION BARU*\n\n`;
+  let msg = `*Quotations*\n\n`;
   msg += `*Detail Pelanggan:*\n`;
   msg += `👤 Nama: ${orderDetails.customerName}\n`;
   msg += `📱 WhatsApp: ${orderDetails.whatsappNumber}\n`;
