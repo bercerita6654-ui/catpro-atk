@@ -594,7 +594,7 @@ export function Cart({
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded shadow-lg shadow-blue-100 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
+            className="w-full py-3 px-4 bg-[#107c41] hover:bg-[#0f703b] text-white font-bold rounded shadow-lg shadow-emerald-100/70 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer border border-[#0d6434]"
           >
             <Download className="w-4 h-4" />
             BUAT & UNDUH QUOTATION (.EXCEL)
