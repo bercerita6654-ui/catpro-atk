@@ -244,16 +244,9 @@ export function Cart({
     // 1. Generate and download the Excel file
     generateOrderExcel(items, details);
 
-    // 2. Generate WhatsApp message and redirect to WhatsApp
+    // 2. Generate WhatsApp message and redirect to WhatsApp (without specific phone to let user choose contact)
     const waMsg = generateWhatsAppMessage(items, details);
-    let phoneNum = details.whatsappNumber.replace(/[^\d]/g, '');
-    if (phoneNum.startsWith('0')) {
-      phoneNum = '62' + phoneNum.slice(1);
-    }
-
-    const whatsappUrl = phoneNum
-      ? `https://api.whatsapp.com/send?phone=${phoneNum}&text=${waMsg}`
-      : `https://api.whatsapp.com/send?text=${waMsg}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${waMsg}`;
 
     window.open(whatsappUrl, '_blank');
   };
