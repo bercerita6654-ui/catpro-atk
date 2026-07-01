@@ -427,11 +427,14 @@ export function Cart({
 
         <div className="space-y-3">
           <button
-            onClick={() => handleShareExcel(cartItems, lastOrderDetails)}
+            onClick={() => {
+              setIsHistoryExpanded(true);
+              handleResetOrder();
+            }}
             className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase tracking-wider"
           >
-            <Send className="w-4 h-4" />
-            Kirim / Share File Excel (.xlsx)
+            <History className="w-4 h-4 animate-pulse" />
+            Riwayat & Daftar File Download
           </button>
           
           <button

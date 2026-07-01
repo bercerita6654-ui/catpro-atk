@@ -897,7 +897,7 @@ export default function App() {
             </div>
 
             {/* RIGHT COLUMN: Cart Panel & Checkout Details */}
-            <div className={`lg:col-span-4 ${activeTab !== 'cart' ? 'hidden lg:block' : ''}`}>
+            <div id="cart-container" className={`lg:col-span-4 lg:sticky lg:top-6 ${activeTab !== 'cart' ? 'hidden lg:block' : ''}`}>
               <Cart
                 cartItems={cart}
                 onAddToCart={handleAddToCart}
@@ -917,7 +917,10 @@ export default function App() {
         {activeTab === 'catalog' && totalCartCount > 0 && (
           <div className="fixed bottom-4 left-4 right-4 z-50 lg:hidden">
             <button
-              onClick={() => setActiveTab('cart')}
+              onClick={() => {
+                setActiveTab('cart');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 px-5 rounded-xl shadow-xl flex items-center justify-between transition-all cursor-pointer text-xs"
             >
               <div className="flex items-center gap-2">
@@ -928,6 +931,37 @@ export default function App() {
                 <span>{totalCartCount} Item</span>
                 <span>&rarr;</span>
               </div>
+            </button>
+          </div>
+        )}
+
+        {/* Floating Action Button (FAB) in the bottom right (mainly for Desktop, but also works as a handy shortcut) */}
+        {totalCartCount > 0 && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setActiveTab('cart');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  const element = document.getElementById('cart-container');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }
+              }}
+              className="flex items-center justify-center w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group relative cursor-pointer border-2 border-white"
+              title="Lihat Keranjang & Download Quotation"
+            >
+              <ShoppingBag className="w-6 h-6 animate-pulse" />
+              <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-5 h-5 flex items-center justify-center border border-white shadow-md">
+                {totalCartCount}
+              </span>
+              
+              {/* Tooltip on hover */}
+              <span className="absolute right-16 bg-slate-900 text-white text-[10px] font-bold py-1 px-2.5 rounded shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                Keranjang & Download
+              </span>
             </button>
           </div>
         )}
