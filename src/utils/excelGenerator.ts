@@ -6,7 +6,7 @@
 import * as XLSX from 'xlsx';
 import { CartItem, OrderDetails } from '../types';
 
-export function generateOrderExcel(cartItems: CartItem[], orderDetails: OrderDetails): void {
+export function getQuotationFile(cartItems: CartItem[], orderDetails: OrderDetails): { file: File; filename: string } {
   // Create a new workbook
   const wb = XLSX.utils.book_new();
 
@@ -140,8 +140,24 @@ export function generateOrderExcel(cartItems: CartItem[], orderDetails: OrderDet
   const cleanName = orderDetails.customerName.replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `Quotation_${cleanName}_${new Date().toISOString().slice(0,10)}.xlsx`;
 
-  // Write and download
-  XLSX.writeFile(wb, filename);
+  // Write workbook to array buffer
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const file = new File([blob], filename, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  return { file, filename };
+}
+
+export function generateOrderExcel(cartItems: CartItem[], orderDetails: OrderDetails): void {
+  const { file, filename } = getQuotationFile(cartItems, orderDetails);
+
+  // Create a download link and trigger click
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function generateWhatsAppMessage(cartItems: CartItem[], orderDetails: OrderDetails): string {
