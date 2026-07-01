@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Trash2, Plus, Minus, User, Phone, MapPin, FileText, Download, Send, CheckCircle2, History, RotateCcw, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, User, Phone, MapPin, FileText, Download, Send, CheckCircle2, History, RotateCcw, Calendar, ChevronDown, ChevronUp, X, ExternalLink, HelpCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CartItem, OrderDetails, Product } from '../types';
 import { generateOrderExcel, generateWhatsAppMessage, getQuotationFile } from '../utils/excelGenerator';
 
@@ -100,6 +101,9 @@ export function Cart({
   onUpdateCartItemNote,
   onLoadPreviousOrder,
 }: CartProps) {
+  const [showShareGuide, setShowShareGuide] = useState<boolean>(false);
+  const [sharedFileName, setSharedFileName] = useState<string>('');
+
   const [savedDetails, setSavedDetails] = useState<OrderDetails | null>(() => {
     try {
       const saved = localStorage.getItem('balistationery_saved_customer') || localStorage.getItem('stockflow_saved_customer');
@@ -241,14 +245,25 @@ export function Cart({
   };
 
   const handleShareExcel = (items: CartItem[], details: OrderDetails) => {
-    // 1. Generate and download the Excel file
-    generateOrderExcel(items, details);
+    const { file, filename } = getQuotationFile(items, details);
+    setSharedFileName(filename);
 
-    // 2. Generate WhatsApp message and redirect to WhatsApp (without specific phone to let user choose contact)
-    const waMsg = generateWhatsAppMessage(items, details);
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${waMsg}`;
-
-    window.open(whatsappUrl, '_blank');
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({
+        files: [file],
+        title: filename,
+        text: `Quotation untuk ${details.customerName}`,
+      }).catch((err) => {
+        console.warn('Native share failed or cancelled, falling back to manual share guide:', err);
+        // Fallback: download automatically and show manual guide
+        generateOrderExcel(items, details);
+        setShowShareGuide(true);
+      });
+    } else {
+      // Fallback: download automatically and show manual guide
+      generateOrderExcel(items, details);
+      setShowShareGuide(true);
+    }
   };
 
   const handleWhatsAppShare = () => {
@@ -692,6 +707,104 @@ export function Cart({
           </button>
         </form>
       </div>
+
+      <AnimatePresence>
+        {showShareGuide && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 flex flex-col text-left"
+            >
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                    <Send className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-sans font-bold text-slate-800 text-sm">Kirim File Excel via WhatsApp</h4>
+                    <p className="text-[10px] text-slate-500 font-medium">Panduan mengirim dokumen excel quotation</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowShareGuide(false)}
+                  className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-full transition-colors cursor-pointer"
+                  aria-label="Tutup panduan"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg flex gap-2.5">
+                  <Download className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <p className="font-bold text-blue-900">File Berhasil Diunduh!</p>
+                    <p className="text-blue-700/90 font-mono mt-0.5 break-all text-[11px] font-semibold">{sharedFileName}</p>
+                    <p className="text-blue-600 mt-1 text-[11px]">Silakan kirimkan file excel di atas sebagai dokumen lampiran ke WhatsApp Anda.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-slate-700">Langkah mengirim file dokumen:</p>
+                  
+                  <div className="space-y-2.5 text-xs text-slate-600">
+                    <div className="flex gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-[10px] shrink-0">1</span>
+                      <p className="leading-relaxed">
+                        Klik tombol <strong className="text-emerald-700">Buka WhatsApp</strong> di bawah untuk membuka daftar chat/kontak WhatsApp Anda.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-[10px] shrink-0">2</span>
+                      <p className="leading-relaxed">
+                        Pilih kontak / penerima yang ingin dikirimi quotation.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-[10px] shrink-0">3</span>
+                      <p className="leading-relaxed">
+                        Di kolom obrolan, klik tombol <strong>Lampiran (Ikon Klip Kertas 📎 atau tanda Tambah +)</strong>.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-[10px] shrink-0">4</span>
+                      <p className="leading-relaxed">
+                        Pilih opsi <strong>Dokumen</strong>, lalu cari & kirim file bernama <code className="bg-slate-100 px-1 py-0.5 rounded text-[10px] text-slate-700 font-mono font-semibold">{sharedFileName || 'Quotation_...xlsx'}</code> yang baru diunduh tadi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-slate-50 border-t border-slate-100 flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowShareGuide(false)}
+                  className="flex-1 py-2 px-3 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded text-xs transition-colors cursor-pointer text-center uppercase tracking-wider"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowShareGuide(false);
+                    window.open('https://api.whatsapp.com/send', '_blank');
+                  }}
+                  className="flex-[2] py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md uppercase tracking-wider border border-emerald-700"
+                >
+                  Buka WhatsApp
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
