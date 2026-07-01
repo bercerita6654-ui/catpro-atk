@@ -106,7 +106,7 @@ export function Cart({
 
   const [savedDetails, setSavedDetails] = useState<OrderDetails | null>(() => {
     try {
-      const saved = localStorage.getItem('balistationery_saved_customer') || localStorage.getItem('stockflow_saved_customer');
+      const saved = localStorage.getItem('globalmart_saved_customer') || localStorage.getItem('balistationery_saved_customer') || localStorage.getItem('stockflow_saved_customer');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
@@ -115,7 +115,7 @@ export function Cart({
 
   const [orderHistory, setOrderHistory] = useState<any[]>(() => {
     try {
-      const saved = localStorage.getItem('balistationery_order_history');
+      const saved = localStorage.getItem('globalmart_order_history') || localStorage.getItem('balistationery_order_history');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
@@ -196,7 +196,7 @@ export function Cart({
     // Save receiver details to localStorage if checkbox is checked
     if (saveInfo) {
       try {
-        localStorage.setItem('balistationery_saved_customer', JSON.stringify(orderDetails));
+        localStorage.setItem('globalmart_saved_customer', JSON.stringify(orderDetails));
         setSavedDetails(orderDetails);
       } catch (err) {
         console.error('Failed to save customer details to localStorage:', err);
@@ -208,7 +208,7 @@ export function Cart({
 
     // Save order to history
     try {
-      const historyJson = localStorage.getItem('balistationery_order_history');
+      const historyJson = localStorage.getItem('globalmart_order_history') || localStorage.getItem('balistationery_order_history');
       const currentHistory = historyJson ? JSON.parse(historyJson) : [];
       
       const newHistoryItem = {
@@ -233,7 +233,7 @@ export function Cart({
       };
       
       const updatedHistory = [newHistoryItem, ...currentHistory].slice(0, 15);
-      localStorage.setItem('balistationery_order_history', JSON.stringify(updatedHistory));
+      localStorage.setItem('globalmart_order_history', JSON.stringify(updatedHistory));
       setOrderHistory(updatedHistory);
     } catch (e) {
       console.error('Failed to save order to history:', e);
@@ -296,7 +296,7 @@ export function Cart({
     e.stopPropagation();
     try {
       const updated = orderHistory.filter(item => item.id !== id);
-      localStorage.setItem('balistationery_order_history', JSON.stringify(updated));
+      localStorage.setItem('globalmart_order_history', JSON.stringify(updated));
       setOrderHistory(updated);
     } catch (err) {
       console.error('Failed to delete history item:', err);

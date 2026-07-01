@@ -114,7 +114,7 @@ export default function App() {
   // Shopping cart state
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
-      const savedCart = localStorage.getItem('balistationery_cart') || localStorage.getItem('stockflow_cart');
+      const savedCart = localStorage.getItem('globalmart_cart') || localStorage.getItem('balistationery_cart') || localStorage.getItem('stockflow_cart');
       return savedCart ? JSON.parse(savedCart) : [];
     } catch (e) {
       console.error('Failed to load cart from localStorage:', e);
@@ -124,7 +124,7 @@ export default function App() {
 
   // Save cart to localStorage on changes
   useEffect(() => {
-    localStorage.setItem('balistationery_cart', JSON.stringify(cart));
+    localStorage.setItem('globalmart_cart', JSON.stringify(cart));
   }, [cart]);
 
   // State to hold the stock alert notification details
@@ -133,7 +133,7 @@ export default function App() {
   // Recent searches state
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('balistationery_recent_searches');
+      const saved = localStorage.getItem('globalmart_recent_searches') || localStorage.getItem('balistationery_recent_searches');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
@@ -149,7 +149,7 @@ export default function App() {
       const filtered = prev.filter(q => q.toLowerCase() !== trimmed.toLowerCase());
       const updated = [trimmed, ...filtered].slice(0, 8);
       try {
-        localStorage.setItem('balistationery_recent_searches', JSON.stringify(updated));
+        localStorage.setItem('globalmart_recent_searches', JSON.stringify(updated));
       } catch (e) {
         console.error('Failed to save recent searches:', e);
       }
@@ -172,7 +172,7 @@ export default function App() {
     setRecentSearches(prev => {
       const updated = prev.filter(q => q.toLowerCase() !== term.toLowerCase());
       try {
-        localStorage.setItem('balistationery_recent_searches', JSON.stringify(updated));
+        localStorage.setItem('globalmart_recent_searches', JSON.stringify(updated));
       } catch (e) {
         console.error('Failed to save recent searches:', e);
       }
@@ -184,6 +184,7 @@ export default function App() {
   const handleClearAllRecentSearches = () => {
     setRecentSearches([]);
     try {
+      localStorage.removeItem('globalmart_recent_searches');
       localStorage.removeItem('balistationery_recent_searches');
     } catch (e) {
       console.error('Failed to clear recent searches:', e);
@@ -467,10 +468,10 @@ export default function App() {
             {/* Logo and status */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-xs">
-                B
+                G
               </div>
               <div>
-                <h1 className="text-base font-extrabold text-slate-800 leading-none">Balistationery</h1>
+                <h1 className="text-base font-extrabold text-slate-800 leading-none">GLOBAL MART</h1>
                 <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-0.5">
                   Digital Catalog & Quotation Builder
                 </p>
