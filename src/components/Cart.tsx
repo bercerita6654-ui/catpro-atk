@@ -373,15 +373,6 @@ export function Cart({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleShareExcel(hist.items, hist)}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 hover:text-teal-800 font-bold rounded text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-3xs border border-teal-100"
-                      title="Kirim / Share File Excel"
-                    >
-                      <Send className="w-2.5 h-2.5" />
-                      Share
-                    </button>
-                    <button
-                      type="button"
                       onClick={(e) => handleDeleteHistory(hist.id, e)}
                       className="p-1 text-slate-400 hover:text-rose-600 transition-colors rounded hover:bg-slate-50"
                       title="Hapus Riwayat"
