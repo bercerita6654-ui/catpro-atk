@@ -14,6 +14,7 @@ interface ProductCardProps {
   cartQuantity: number;
   onAddToCart: (product: Product) => void;
   onRemoveFromCart: (product: Product) => void;
+  onSetCartItemQuantity?: (product: Product, quantity: number) => void;
 }
 
 export function ProductCard({
@@ -21,9 +22,15 @@ export function ProductCard({
   cartQuantity,
   onAddToCart,
   onRemoveFromCart,
+  onSetCartItemQuantity,
 }: ProductCardProps) {
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [inputValue, setInputValue] = useState<string>(cartQuantity.toString());
+
+  useEffect(() => {
+    setInputValue(cartQuantity.toString());
+  }, [cartQuantity]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -138,17 +145,53 @@ export function ProductCard({
               <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded p-0.5">
                 <button
                   onClick={() => onRemoveFromCart(product)}
-                  className="p-1 sm:p-1.5 text-blue-700 hover:bg-blue-100 rounded transition-colors"
+                  className="p-1 sm:p-1.5 text-blue-700 hover:bg-blue-100 rounded transition-colors shrink-0"
                   aria-label="Kurangi jumlah"
                 >
                   <Minus className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                 </button>
-                <span className="font-bold text-blue-800 text-[9px] xs:text-[10px] sm:text-xs font-sans px-1">
-                  {cartQuantity} {product.unit}
-                </span>
+                <div className="flex items-center gap-0.5 min-w-0 flex-grow justify-center">
+                  <input
+                    type="number"
+                    min="1"
+                    max={product.qty}
+                    value={inputValue}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setInputValue(val);
+                      const parsed = parseInt(val, 10);
+                      if (!isNaN(parsed) && parsed > 0) {
+                        onSetCartItemQuantity?.(product, parsed);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (inputValue === '' || isNaN(parseInt(inputValue, 10))) {
+                        setInputValue(cartQuantity.toString());
+                      } else {
+                        const parsed = parseInt(inputValue, 10);
+                        if (parsed <= 0) {
+                          onSetCartItemQuantity?.(product, 0);
+                        } else if (parsed > product.qty) {
+                          onSetCartItemQuantity?.(product, product.qty);
+                          setInputValue(product.qty.toString());
+                        }
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    className="w-10 sm:w-14 text-center bg-white border border-blue-100 rounded text-blue-800 text-[10px] sm:text-xs font-bold py-0.5 focus:outline-hidden focus:ring-1 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none min-w-0"
+                    aria-label="Input jumlah custom"
+                  />
+                  <span className="text-[8px] sm:text-[10px] font-bold text-blue-600 uppercase shrink-0 truncate max-w-[20px] sm:max-w-none">
+                    {product.unit}
+                  </span>
+                </div>
                 <button
                   onClick={() => onAddToCart(product)}
-                  className="p-1 sm:p-1.5 text-blue-700 hover:bg-blue-100 rounded transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 text-blue-700 hover:bg-blue-100 rounded transition-colors cursor-pointer shrink-0"
                   aria-label="Tambah jumlah"
                 >
                   <Plus className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
