@@ -241,20 +241,21 @@ export function Cart({
   };
 
   const handleShareExcel = (items: CartItem[], details: OrderDetails) => {
-    const { file, filename } = getQuotationFile(items, details);
+    // 1. Generate and download the Excel file
+    generateOrderExcel(items, details);
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({
-        files: [file],
-        title: filename,
-        text: `Berikut adalah file excel quotation untuk pelanggan ${details.customerName}.`,
-      }).catch((err) => {
-        console.error('Error sharing file:', err);
-      });
-    } else {
-      generateOrderExcel(items, details);
-      alert(`Fitur share file langsung tidak didukung browser ini.\n\nFile Excel "${filename}" telah diunduh secara otomatis. Silakan kirimkan file tersebut secara manual ke WhatsApp.`);
+    // 2. Generate WhatsApp message and redirect to WhatsApp
+    const waMsg = generateWhatsAppMessage(items, details);
+    let phoneNum = details.whatsappNumber.replace(/[^\d]/g, '');
+    if (phoneNum.startsWith('0')) {
+      phoneNum = '62' + phoneNum.slice(1);
     }
+
+    const whatsappUrl = phoneNum
+      ? `https://api.whatsapp.com/send?phone=${phoneNum}&text=${waMsg}`
+      : `https://api.whatsapp.com/send?text=${waMsg}`;
+
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleWhatsAppShare = () => {
