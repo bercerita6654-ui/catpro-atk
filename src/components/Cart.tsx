@@ -3,15 +3,87 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Trash2, Plus, Minus, User, Phone, MapPin, FileText, Download, Send, CheckCircle2, History, RotateCcw, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { CartItem, OrderDetails, Product } from '../types';
-import { generateOrderExcel, generateWhatsAppMessage } from '../utils/excelGenerator';
+import { generateOrderExcel, generateWhatsAppMessage, getQuotationFile } from '../utils/excelGenerator';
+
+function CartQtySelector({
+  item,
+  onAddToCart,
+  onRemoveFromCart,
+  onSetCartItemQuantity,
+}: {
+  item: CartItem;
+  onAddToCart: (product: Product) => void;
+  onRemoveFromCart: (product: Product) => void;
+  onSetCartItemQuantity?: (product: Product, quantity: number) => void;
+}) {
+  const [val, setVal] = useState<string>(item.quantity.toString());
+
+  useEffect(() => {
+    setVal(item.quantity.toString());
+  }, [item.quantity]);
+
+  return (
+    <div className="flex items-center bg-slate-50 border border-slate-200 rounded overflow-hidden">
+      <button
+        onClick={() => onRemoveFromCart(item.product)}
+        className="p-1 text-slate-500 hover:bg-slate-100 rounded-l cursor-pointer"
+        aria-label="Kurangi jumlah"
+      >
+        <Minus className="w-3.5 h-3.5" />
+      </button>
+      <input
+        type="number"
+        min="1"
+        max={item.product.qty}
+        value={val}
+        onChange={(e) => {
+          const v = e.target.value;
+          setVal(v);
+          const parsed = parseInt(v, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            onSetCartItemQuantity?.(item.product, parsed);
+          }
+        }}
+        onBlur={() => {
+          if (val === '' || isNaN(parseInt(val, 10))) {
+            setVal(item.quantity.toString());
+          } else {
+            const parsed = parseInt(val, 10);
+            if (parsed <= 0) {
+              onSetCartItemQuantity?.(item.product, 0);
+            } else if (parsed > item.product.qty) {
+              onSetCartItemQuantity?.(item.product, item.product.qty);
+              setVal(item.product.qty.toString());
+            }
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.currentTarget.blur();
+          }
+        }}
+        className="w-12 text-center bg-white border-x border-slate-200 text-slate-800 text-xs font-bold py-0.5 focus:outline-hidden focus:ring-1 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none min-w-0"
+        aria-label="Input jumlah item"
+      />
+      <button
+        onClick={() => onAddToCart(item.product)}
+        className="p-1 text-slate-500 hover:bg-slate-100 rounded-r cursor-pointer"
+        aria-label="Tambah jumlah"
+      >
+        <Plus className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
 
 interface CartProps {
   cartItems: CartItem[];
   onAddToCart: (product: Product) => void;
   onRemoveFromCart: (product: Product) => void;
+  onSetCartItemQuantity?: (product: Product, quantity: number) => void;
   onClearCartItem: (product: Product) => void;
   onClearAll: () => void;
   onUpdateCartItemNote: (product: Product, note: string) => void;
@@ -22,6 +94,7 @@ export function Cart({
   cartItems,
   onAddToCart,
   onRemoveFromCart,
+  onSetCartItemQuantity,
   onClearCartItem,
   onClearAll,
   onUpdateCartItemNote,
@@ -167,6 +240,23 @@ export function Cart({
     setIsSuccess(true);
   };
 
+  const handleShareExcel = (items: CartItem[], details: OrderDetails) => {
+    const { file, filename } = getQuotationFile(items, details);
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({
+        files: [file],
+        title: filename,
+        text: `Berikut adalah file excel quotation untuk pelanggan ${details.customerName}.`,
+      }).catch((err) => {
+        console.error('Error sharing file:', err);
+      });
+    } else {
+      generateOrderExcel(items, details);
+      alert(`Fitur share file langsung tidak didukung browser ini.\n\nFile Excel "${filename}" telah diunduh secara otomatis. Silakan kirimkan file tersebut secara manual ke WhatsApp.`);
+    }
+  };
+
   const handleWhatsAppShare = () => {
     if (!lastOrderDetails) return;
     const waMsg = generateWhatsAppMessage(cartItems, lastOrderDetails);
@@ -232,7 +322,7 @@ export function Cart({
         >
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-blue-600 shrink-0" />
-            <span className="font-sans font-bold text-slate-800 text-xs sm:text-sm">Riwayat Pesanan Sebelumnya ({orderHistory.length})</span>
+            <span className="font-sans font-bold text-slate-800 text-xs sm:text-sm">Riwayat Pembuatan Quotation Excel ({orderHistory.length})</span>
           </div>
           {!forceOpen && (
             isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
@@ -253,15 +343,33 @@ export function Cart({
                       {hist.date} &middot; {hist.items.reduce((acc: number, item: any) => acc + item.quantity, 0)} item
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                     <button
                       type="button"
                       onClick={() => handleLoadHistory(hist)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 font-bold rounded text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-3xs"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 font-bold rounded text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-3xs border border-blue-100"
                       title="Muat Ulang Pesanan ke Keranjang"
                     >
                       <RotateCcw className="w-2.5 h-2.5" />
                       Muat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => generateOrderExcel(hist.items, hist)}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 font-bold rounded text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-3xs border border-emerald-100"
+                      title="Unduh File Excel"
+                    >
+                      <Download className="w-2.5 h-2.5" />
+                      Excel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleShareExcel(hist.items, hist)}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 hover:text-teal-800 font-bold rounded text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-3xs border border-teal-100"
+                      title="Kirim / Share File Excel"
+                    >
+                      <Send className="w-2.5 h-2.5" />
+                      Share
                     </button>
                     <button
                       type="button"
@@ -310,16 +418,16 @@ export function Cart({
 
         <div className="space-y-3">
           <button
-            onClick={handleWhatsAppShare}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded text-xs transition-colors flex items-center justify-center gap-2"
+            onClick={() => handleShareExcel(cartItems, lastOrderDetails)}
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase tracking-wider"
           >
-            <Send className="w-3.5 h-3.5" />
-            Kirim Quotation via WhatsApp
+            <Send className="w-4 h-4" />
+            Kirim / Share File Excel (.xlsx)
           </button>
           
           <button
             onClick={() => generateOrderExcel(cartItems, lastOrderDetails)}
-            className="w-full py-2 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded text-xs transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded text-xs transition-colors flex items-center justify-center gap-2 animate-pulse"
           >
             <Download className="w-3.5 h-3.5" />
             Download Ulang Excel Quotation
@@ -409,23 +517,12 @@ export function Cart({
                   </div>
                   <div className="flex items-center justify-between mt-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center bg-slate-50 border border-slate-200 rounded">
-                        <button
-                          onClick={() => onRemoveFromCart(item.product)}
-                          className="p-1 text-slate-500 hover:bg-slate-100 rounded-l"
-                        >
-                          <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="text-xs font-bold text-slate-800 px-2.5 min-w-[30px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => onAddToCart(item.product)}
-                          className="p-1 text-slate-500 hover:bg-slate-100 rounded-r cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <CartQtySelector
+                        item={item}
+                        onAddToCart={onAddToCart}
+                        onRemoveFromCart={onRemoveFromCart}
+                        onSetCartItemQuantity={onSetCartItemQuantity}
+                      />
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide bg-slate-100 px-2 py-0.5 rounded">
                         {item.product.unit}
                       </span>
