@@ -129,24 +129,14 @@ export async function fetchProducts(): Promise<Product[]> {
           // Qty: Col 13 -> index 12
           // Foto Produk: Col 22 -> index 21
 
-          for (let i = 0; i < rows.length; i++) {
+          for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            
-            // Skip header if it is header row (checks if it has SKU/Nama headers)
-            const isHeader = 
-              row[0]?.toLowerCase().includes('sku') || 
-              row[2]?.toLowerCase().includes('nama') || 
-              row[2]?.toLowerCase().includes('product');
-              
-            if (isHeader && i === 0) {
-              continue; 
-            }
 
-            const sku = row[0]?.trim() || '';
+            const sku = row[0]?.trim() || row[1]?.trim() || `SKU-${i}`;
             const name = row[2]?.trim() || '';
             
-            // Skip rows that don't have valid SKU and Name
-            if (!sku || !name || sku === '-' || name === '-') {
+            // Skip rows that don't have valid Name
+            if (!name || name === '-') {
               continue;
             }
 
