@@ -155,7 +155,7 @@ export async function fetchProducts(): Promise<Product[]> {
             const brand = row[6]?.trim() || 'Tanpa Merk';
             const rawPrice = row[10]?.trim() || '0';
             const rawQty = row[12]?.trim() || '0';
-            const imageUrl = getGoogleDriveImageUrl(row[21]?.trim() || '');
+            const imageUrl = getGoogleDriveImageUrl(row[23]?.trim() || '');
 
             products.push({
               sku,
