@@ -83,7 +83,7 @@ export function ProductCard({
         id={`product-card-${product.sku}-placeholder`}
         className="bg-white rounded-lg border border-slate-200 shadow-xs flex flex-col justify-between p-1.5 xs:p-2 sm:p-4 min-h-[160px] xs:min-h-[190px] sm:min-h-[300px] md:min-h-[380px] h-full animate-pulse"
       >
-        <div className="w-full h-20 xs:h-24 sm:h-36 md:h-48 bg-slate-100 rounded-t-xl mb-1 sm:mb-3"></div>
+        <div className="w-full aspect-square bg-slate-100 rounded-t-xl mb-1 sm:mb-3"></div>
         <div className="space-y-1 sm:space-y-2 flex-grow">
           <div className="h-1.5 sm:h-3 bg-slate-100 rounded w-1/3"></div>
           <div className="h-2.5 sm:h-4 bg-slate-100 rounded w-3/4"></div>

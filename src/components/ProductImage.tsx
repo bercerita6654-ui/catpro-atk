@@ -50,7 +50,7 @@ export function ProductImage({ src, name, category }: ProductImageProps) {
 
   if (!src || error) {
     return (
-      <div className={`w-full h-20 xs:h-24 sm:h-36 md:h-48 rounded-t-xl flex flex-col items-center justify-center p-2 sm:p-4 bg-gradient-to-br ${gradient} relative overflow-hidden transition-all duration-300`}>
+      <div className={`w-full aspect-square rounded-t-xl flex flex-col items-center justify-center p-2 sm:p-4 bg-gradient-to-br ${gradient} relative overflow-hidden transition-all duration-300`}>
         <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-white/60 backdrop-blur-xs text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-medium">
           {category}
         </div>
@@ -66,7 +66,7 @@ export function ProductImage({ src, name, category }: ProductImageProps) {
   }
 
   return (
-    <div className="w-full h-20 xs:h-24 sm:h-36 md:h-48 rounded-t-xl relative bg-slate-50 overflow-hidden group">
+    <div className="w-full aspect-square rounded-t-xl relative bg-slate-50 overflow-hidden group flex items-center justify-center">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-100 animate-pulse">
           <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -78,11 +78,11 @@ export function ProductImage({ src, name, category }: ProductImageProps) {
         referrerPolicy="no-referrer"
         onLoad={handleImageLoaded}
         onError={handleImageError}
-        className={`w-full h-20 xs:h-24 sm:h-36 md:h-48 object-cover transition-transform duration-500 group-hover:scale-105 ${
+        className={`w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 ${
           loading ? 'opacity-0' : 'opacity-100'
         }`}
       />
-      <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-slate-900/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+      <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-slate-900/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-medium z-10">
         {category}
       </div>
     </div>
