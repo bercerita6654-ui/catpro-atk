@@ -114,7 +114,7 @@ export function ProductCard({
             <Tag className="w-2 h-2 sm:w-3 sm:h-3 shrink-0" />
             {product.brand}
           </span>
-          <span className="font-mono text-slate-400 bg-slate-50 px-1 py-0.5 sm:px-2 rounded-xs text-[7px] xs:text-[8px] sm:text-[10px] truncate xs:max-w-none">
+          <span className="font-mono bg-slate-50 px-1 py-0.5 sm:px-2 rounded-xs truncate xs:max-w-none" style={{ fontSize: '14px', color: '#16181f' }}>
             SKU: {product.sku}
           </span>
         </div>
